@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+}
+
+hr {
+    border-color: lightgrey;
+    margin: 0 1em;
+}
+
+.posts {
+    padding: 0 2em;
+}
+
+.content {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    border: 1px solid grey;
+    border-radius: 10px;
+    margin: 1em 0 1em 0;
+    padding: 1em 0.5em 0 0.5em;
+    /* box-shadow: 5px 5px 10px 5px lightgrey; */
+}
+
+.ml {
+    margin-left: auto;
+}
