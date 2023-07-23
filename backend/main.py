@@ -7,7 +7,7 @@ from .model.post import Post
 from contextlib import closing
 import sklearn
 import sqlite3
-import ntlk
+import nltk
 from .config import Config
 
 app = FastAPI()
