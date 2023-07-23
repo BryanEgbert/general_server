@@ -39,4 +39,5 @@ jobs:
         out-file-path: backend/rf_v1.2_dill.joblib
     - name: Test with pytest
       run: |
+        cd backend
         pytest
