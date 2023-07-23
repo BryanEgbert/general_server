@@ -10,6 +10,6 @@ class PostRequest(BaseModel):
 class Post():
     name: str
     post: str
-    polarity: str
-    created_at: str
     id: Optional[int] = None
+    polarity: Optional[str] = None
+    created_at: Optional[str] = None

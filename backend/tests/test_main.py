@@ -57,3 +57,34 @@ def test_get_post_should_return_array_of_post_if_table_is_not_empty():
 
         assert response.status_code == 200
         assert response.json() == expected_output, f"expect: {expected_output}\ngot:{response.json()}"
+
+def test_should_upload_post_with_201_status_code_when_all_required_fields_are_not_empty():
+    with TestClient(app) as client:
+        response = client.post(
+            "/post/", 
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}, 
+            data={'name': 'test', 'post': 'i am a good guy'})
+
+        assert response.status_code == 201
+        assert response.json()['name'] == "test"
+        assert response.json()['post'] == "i am a good guy" 
+        assert response.json()['polarity'] != None
+        assert response.json()['created_at'] != None
+
+def test_should_upload_post_with_400_status_code_when_name_field_is_empty():
+    with TestClient(app) as client:
+        response = client.post(
+            "/post/", 
+            # headers={'Content-Type': 'application/x-www-form-urlencoded'}, 
+            data={'post': 'i am a good guy'})
+
+        assert response.status_code == 422
+
+def test_should_upload_post_with_400_status_code_when_post_field_is_empty():
+    with TestClient(app) as client:
+        response = client.post(
+            "/post/", 
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}, 
+            data={'name': 'test'})
+
+        assert response.status_code == 422

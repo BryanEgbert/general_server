@@ -1,5 +1,5 @@
 from typing import Annotated, List
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, status
 from fastapi.encoders import jsonable_encoder
 from .utils.sentiment_model import SentimentModel
 from .utils.db import get_sqlite_connection
@@ -26,7 +26,7 @@ def on_startup():
                     name TEXT NOT NULL,
                     post TEXT NOT NULL,
                     polarity TEXT NOT NULL,
-                    created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP)"""
+                    created_at INTEGER DEFAULT CURRENT_TIMESTAMP)"""
             else:
                 cursor.execute("DROP TABLE post")
                 stmt = """
@@ -35,7 +35,7 @@ def on_startup():
                     name TEXT NOT NULL,
                     post TEXT NOT NULL,
                     polarity TEXT NOT NULL,
-                    created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP)"""
+                    created_at INTEGER DEFAULT CURRENT_TIMESTAMP)"""
 
             cursor.execute(stmt)
             conn.commit()
@@ -57,7 +57,7 @@ async def get_posts():
             
             return posts
             
-@app.post("/post/", response_model=Post)
+@app.post("/post/", response_model=Post, status_code=status.HTTP_201_CREATED)
 async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]):
     polarity = sentiment_model.model.predict([post])
     post_model: Post = Post(name=name, post=post, polarity="positive" if polarity[0] == 4 else "negative")
@@ -67,8 +67,11 @@ async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]
         with closing(conn.cursor()) as cursor:
             posts: list[Post | None] = []
             cursor.execute(
-                "INSERT INTO post (name, post, polarity, created_at), VALUES (?, ?, ?, ?)",
-                (post_model.name, post_model.post, post_model.polarity, post_model.created_at)
+                "INSERT INTO post (name, post, polarity) VALUES (?, ?, ?) RETURNING created_at",
+                (post_model.name, post_model.post, post_model.polarity)
             )
+
+            data = cursor.fetchone()
+            post_model.created_at = data['created_at']
 
     return post_model
