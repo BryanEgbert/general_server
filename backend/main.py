@@ -1,14 +1,14 @@
 from typing import Annotated, List
 from fastapi import FastAPI, Form, status
 from fastapi.encoders import jsonable_encoder
-from .utils.sentiment_model import SentimentModel
-from .utils.db import get_sqlite_connection
-from .model.post import Post
+from utils.sentiment_model import SentimentModel
+from utils.db import get_sqlite_connection
+from model.post import Post
 from contextlib import closing
 import sklearn
 import sqlite3
 import nltk
-from .config import Config
+from config import Config
 
 app = FastAPI()
 cfg = Config()

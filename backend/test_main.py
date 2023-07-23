@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
-from ..model.post import Post
+from .model.post import Post
 from datetime import datetime
-from ..utils.db import get_sqlite_connection
+from .utils.db import get_sqlite_connection
 from contextlib import closing
 import json
-from ..main import app, cfg
+from backend.main import app, cfg
 import pytest
 # test
 fake_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
