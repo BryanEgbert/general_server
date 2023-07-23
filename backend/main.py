@@ -28,7 +28,7 @@ def on_startup():
                     polarity TEXT NOT NULL,
                     created_at INTEGER DEFAULT CURRENT_TIMESTAMP)"""
             else:
-                cursor.execute("DROP TABLE post")
+                cursor.execute("DROP TABLE IF EXISTS post")
                 stmt = """
                 CREATE TABLE post(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
