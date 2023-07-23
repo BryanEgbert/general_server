@@ -69,11 +69,12 @@ async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]
         with closing(conn.cursor()) as cursor:
             posts: list[Post | None] = []
             cursor.execute(
-                "INSERT INTO post (name, post, polarity) VALUES (?, ?, ?) RETURNING created_at",
+                "INSERT INTO post (name, post, polarity) VALUES (?, ?, ?) RETURNING id, created_at",
                 (post_model.name, post_model.post, post_model.polarity)
             )
 
             data = cursor.fetchone()
+            post_model.id = data['id']
             post_model.created_at = data['created_at']
 
     return post_model

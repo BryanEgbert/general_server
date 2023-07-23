@@ -68,6 +68,7 @@ def test_should_upload_post_with_201_status_code_when_all_required_fields_are_no
         assert response.status_code == 201
         assert response.json()['name'] == "test"
         assert response.json()['post'] == "i am a good guy" 
+        assert response.json()['id'] > 0
         assert response.json()['polarity'] != None
         assert response.json()['created_at'] != None
 

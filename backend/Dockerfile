@@ -1,4 +1,4 @@
-FROM python:3.10-alpine3.18
+FROM python:3.11-alpine3.18
 
 RUN apk update
 RUN apk --no-cache add build-base
