@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:simple_social_media}/backend/test.db",
+            "name": "test"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
