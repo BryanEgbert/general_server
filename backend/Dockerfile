@@ -1,5 +1,7 @@
 FROM python:3.10-alpine3.18
 
+RUN apk update
+RUN apk --no-cache add build-base
 RUN mkdir -p /app
 
 COPY . /app
