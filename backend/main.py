@@ -7,6 +7,7 @@ from .model.post import Post
 from contextlib import closing
 import sklearn
 import sqlite3
+import ntlk
 from .config import Config
 
 app = FastAPI()
@@ -16,6 +17,7 @@ sentiment_model = SentimentModel('rf_v1.2_dill.joblib')
 
 @app.on_event("startup")
 def on_startup():
+    nltk.download('wordnet')
     stmt = None
     with closing(get_sqlite_connection(cfg.env)) as conn:
         with closing(conn.cursor()) as cursor:
