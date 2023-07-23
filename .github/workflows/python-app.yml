@@ -36,7 +36,7 @@ jobs:
         fileName: "*.joblib"
         tarBall: false
         zipBall: false
-        out-file-path: backend/rf_v1.2_dill.joblib
+        out-file-path: backend/
     - name: Test with pytest
       run: |
         cd backend
