@@ -28,6 +28,15 @@ jobs:
         cd backend
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: download ML model
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "BryanEgbert/sentiment140_ml"
+        latest: true
+        fileName: "*.joblib"
+        tarBall: false
+        zipBall: false
+        out-file-path: backend/rf_v1.2_dill.joblib
     - name: Test with pytest
       run: |
         pytest
