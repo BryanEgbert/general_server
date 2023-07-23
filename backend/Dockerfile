@@ -12,4 +12,4 @@ RUN wget https://github.com/BryanEgbert/sentiment140_ml/releases/download/v1.0/r
 RUN pip install -U -r requirements.txt && pip uninstall -y pytest && pip uninstall -y httpx
 
 
-CMD ["uvicorn", "main:app", "--root-path", "/api/v1"]
+CMD ["uvicorn", "main:app", "--root-path", "/api/v1", "--host", "0.0.0.0"]
