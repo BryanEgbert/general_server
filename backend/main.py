@@ -77,4 +77,6 @@ async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]
             post_model.id = data['id']
             post_model.created_at = data['created_at']
 
+            conn.commit()
+
     return post_model
