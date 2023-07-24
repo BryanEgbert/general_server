@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
-from .model.post import Post
+from model.post import Post
 from datetime import datetime
-from .utils.db import get_sqlite_connection
+from utils.db import get_sqlite_connection
 from contextlib import closing
 import json
-from backend.main import app, cfg
+from main import app, cfg
 import pytest
 # test
 fake_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -17,24 +17,24 @@ def test_get_post_should_return_empty_array_and_200_code_if_table_is_empty():
         assert response.status_code == 200
         assert response.json() == []
 
-def test_get_post_should_return_array_of_post_if_table_is_not_empty():
+def test_get_post_should_return_length_2_array_of_post_if_table_is_not_empty_and_limit_is_2_with_null_last_id():
     with TestClient(app) as client:
         post_model_1 = Post(name="test1", post="test_post1", polarity="positive", created_at=fake_time)
         post_model_2 = Post(name="test2", post="test_post2", polarity="negative", created_at=fake_time)
 
         expected_output = [
             {
-                "id": 1,
-                "name": "test1",
-                "post": "test_post1",
-                "polarity": "positive",
-                "created_at": fake_time
-            },
-            {
                 "id": 2,
                 "name": "test2",
                 "post": "test_post2",
                 "polarity": "negative",
+                "created_at": fake_time
+            },
+            {
+                "id": 1,
+                "name": "test1",
+                "post": "test_post1",
+                "polarity": "positive",
                 "created_at": fake_time
             },
         ]
@@ -53,7 +53,41 @@ def test_get_post_should_return_array_of_post_if_table_is_not_empty():
 
                 conn.commit()
 
-        response = client.get("/post/")
+        response = client.get("/post/", params={'limit': 2})
+
+        assert response.status_code == 200
+        assert response.json() == expected_output, f"expect: {expected_output}\ngot:{response.json()}"
+
+def test_get_post_should_return_array_of_post_with_id_1_if_table_is_not_empty_and_limit_is_2_with_2_as_last_id():
+    with TestClient(app) as client:
+        post_model_1 = Post(name="test1", post="test_post1", polarity="positive", created_at=fake_time)
+        post_model_2 = Post(name="test2", post="test_post2", polarity="negative", created_at=fake_time)
+
+        expected_output = [
+            {
+                "id": 1,
+                "name": "test1",
+                "post": "test_post1",
+                "polarity": "positive",
+                "created_at": fake_time
+            },
+        ]
+
+        fake_data = [
+            (post_model_1.name, post_model_1.post, post_model_1.polarity, post_model_1.created_at),
+            (post_model_2.name, post_model_2.post, post_model_2.polarity, post_model_2.created_at)
+        ]
+
+        with closing(get_sqlite_connection(cfg.env)) as conn:
+            with closing(conn.cursor()) as cursor:
+                cursor.executemany(
+                    "INSERT INTO post (name, post, polarity, created_at) VALUES (?, ?, ?, ?)",
+                    fake_data
+                )
+
+                conn.commit()
+
+        response = client.get("/post/", params={'limit': 2, 'last_id': 2})
 
         assert response.status_code == 200
         assert response.json() == expected_output, f"expect: {expected_output}\ngot:{response.json()}"

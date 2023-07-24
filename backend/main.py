@@ -1,16 +1,25 @@
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import FastAPI, Form, status
 from fastapi.encoders import jsonable_encoder
-from utils.sentiment_model import SentimentModel
-from utils.db import get_sqlite_connection
-from model.post import Post
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import closing
 import sklearn
 import sqlite3
 import nltk
+
 from config import Config
+from model.post import Post
+from utils.db import get_sqlite_connection
+from utils.sentiment_model import SentimentModel
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 cfg = Config()
 
 sentiment_model = SentimentModel('rf_v1.2_dill.joblib')
@@ -43,12 +52,17 @@ def on_startup():
             conn.commit()
 
 @app.get("/post/", response_model=List[Post])
-async def get_posts():
+async def get_posts(limit: int = 10, last_id: Optional[int] = None):
     with closing(get_sqlite_connection(cfg.env)) as conn:
         conn.row_factory = sqlite3.Row
         with closing(conn.cursor()) as cursor:
             posts: list[Post | None] = []
-            cursor.execute("SELECT id, name, post, polarity, created_at FROM post")
+
+            stmt = f"SELECT id, name, post, polarity, created_at FROM post ORDER BY id DESC LIMIT {limit}"
+            if last_id != None:
+                stmt = f"SELECT id, name, post, polarity, created_at FROM post WHERE id < {last_id} ORDER BY id DESC LIMIT {limit}"
+                
+            cursor.execute(stmt)
             data = cursor.fetchall()
             if len(data) <= 0:
                 return posts
