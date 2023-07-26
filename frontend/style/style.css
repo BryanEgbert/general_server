@@ -1,20 +1,43 @@
+:root {
+    --transparent-lightgrey: rgba(227, 227, 227, 0.6);
+}
+
 body {
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+p {
+    margin: 0.5em 0;
 }
 
 nav {
+    margin: 1em 0;
     display: flex;
     justify-content: space-between;
+    padding: 0 1em;
 }
 
 hr {
     border-color: lightgrey;
-    margin: 0 1em;
+    margin: 0 1em 1em 1em;
 }
 
-.posts {
+#posts {
+    margin-top: 1em;
     padding: 0 2em;
+    height: 85vh;
+    overflow-y: auto;
+}
+
+.positive {
+    color: green;
+}
+
+.negative {
+    color: red;
 }
 
 .content {
@@ -25,9 +48,54 @@ hr {
     border-radius: 10px;
     margin: 1em 0 1em 0;
     padding: 1em 0.5em 0 0.5em;
-    /* box-shadow: 5px 5px 10px 5px lightgrey; */
+    background-color: azure;
+}
+
+.content-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .ml {
     margin-left: auto;
+}
+
+form {
+    position: fixed;
+    bottom: 1px;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 1em;
+    background-color: var(--transparent-lightgrey);
+}
+
+
+
+#post-text-input {
+    background-color: var(--transparent-lightgrey);
+    border: 0;
+    border-bottom: 1px solid;
+    font-size: 1em;
+    width: 80%;
+    margin-right: 1em;
+}
+
+#post-text-input:focus {
+    outline: none !important;
+    border: 0;
+    border-bottom: 2px solid blue;
+}
+
+#post-submit-input {
+    border: none;
+    padding: 1em;
+    background-color: lightblue;
+    font-weight: bold;
+}
+
+#post-submit-input:hover {
+    cursor: pointer;
+    background-color: rgb(146, 212, 234);
 }
