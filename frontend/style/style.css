@@ -32,6 +32,14 @@ hr {
     overflow-y: auto;
 }
 
+.positive {
+    color: green;
+}
+
+.negative {
+    color: red;
+}
+
 .content {
     display: flex;
     justify-content: flex-start;

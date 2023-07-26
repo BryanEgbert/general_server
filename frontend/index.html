@@ -5,10 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
-    <script src="script.js"></script>
+    <script src="script.js" type="module"></script>
     <title>Simple Social Media</title>
 </head>
-<body onload="mainPage()">
+<body>
     <nav>
         <p>Welcome <strong id="username"></strong></p>
     </nav>
@@ -16,7 +16,7 @@
 
     <div id="posts"></div>
     <form id="post-form" action="">
-        <input id="post-text-input" type="text", placeholder="New post">
+        <input id="post-text-input" type="text", placeholder="New post" required>
         <input id="post-submit-input" type="submit" value="Enter">
     </form>
 </body>

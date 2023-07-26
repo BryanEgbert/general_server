@@ -1,0 +1,31 @@
+div {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+form {
+    margin: auto 0;
+}
+
+#login-name-input {
+    border: none;
+    outline: 1px solid;
+    border-radius: 5px;
+    padding: 1em;
+}
+
+#login-btn {
+    border: none;
+    outline: 1px solid;
+    margin-left: 1em;
+    padding: 1em;
+    border-radius: 5px;
+    background-color: rgb(127, 255, 212);
+}
+
+#login-btn:hover {
+    cursor: pointer;
+    background-color: rgb(115, 240, 198);
+    outline: 2px solid rgb(11, 86, 61);
+}

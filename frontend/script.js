@@ -1,20 +1,34 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+import { getPosts, uploadPost } from "./repository/post_repository.js";
 
-async function mainPage() {
+window.onload = async (e) => {
     if (localStorage.getItem("username") == null) {
-        window.location.replace("./views/login.html");
+        window.location.replace("./page/login.html");
     } else {
         await loadMainPage();
-
     }
 }
 
-function loginPage() {
-    document.getElementById("login-btn").onclick = (e) => {
-        inputValue = document.getElementById("login-name-input").value;
-    
-        localStorage.setItem("username", inputValue)
-        window.location.replace("../");
+async function handlePostPagiation(element) {
+    let lastChildPostId = element.children[element.children.length - 1].classList[1];
+
+    if (element.scrollTop + element.offsetHeight >= element.scrollHeight) {
+        let response = await getPosts(lastChildPostId);
+        if (response.ok != true) {
+            console.log("Error fetching posts");
+        } else {
+            for (let post of await response.json()) {
+                element.innerHTML += `
+                <div class="content ${post['id']}">
+                    <div class="content-header">
+                        <p>Posted by <strong>${post['name']}</strong></p>
+                        <p style="font-size: 0.8em;">${post['created_at']}</p>
+                    </div>
+                    <p>${post["post"]}</p>
+                    <p class="ml">the post is: <strong class="${post["polarity"]}">${post["polarity"]}</strong></p>
+                </div>
+                `
+            }
+        }
     }
 }
 
@@ -27,56 +41,30 @@ async function loadMainPage() {
         console.log("Error fetching posts");
     } else {
         let postsElement = document.getElementById("posts");
+        postsElement.onscroll = async (e) => await handlePostPagiation(postsElement);
 
         for (let post of await response.json()) {
             postsElement.innerHTML += `
-            <div class="content">
+            <div class="content ${post['id']}">
                 <div class="content-header">
-                    <p>Posted by <strong>${username}</strong></p>
+                    <p>Posted by <strong>${post['name']}</strong></p>
                     <p style="font-size: 0.8em;">${post['created_at']}</p>
                 </div>
                 <p>${post["post"]}</p>
-                <p class="ml">${post["polarity"]}</p>
+                <p class="ml">the post is: <strong class="${post["polarity"]}">${post["polarity"]}</strong></p>
             </div>
             `
         }
 
-        postsElement.innerHTML += `<div style="margin: 2em 0"></div>`;
-
         document.getElementById("post-form").onsubmit = async (e) => {
+            e.preventDefault();
             let postInput = document.getElementById("post-text-input").value
             let body = {
                 'name': username,
                 'post': postInput
             }
 
-            let response = await uploadPost(body);
-
-            console.log(response)
+            await uploadPost(body);
         }
     }
-}
-
-async function getPosts(limit = 10, last_id = null) {
-    let response = await fetch(`${API_BASE_URL}/post/`, {
-        // mode: 'no-cors',
-        method: "GET",
-        headers: {
-            "accept": "application/json"
-        }
-    });
-
-    return response;
-}
-
-async function uploadPost(body) {
-    let response = await fetch(`${API_BASE_URL}/post/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams(body)
-    })
-
-    return response;
 }

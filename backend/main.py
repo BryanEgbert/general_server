@@ -12,15 +12,16 @@ from model.post import Post
 from utils.db import get_sqlite_connection
 from utils.sentiment_model import SentimentModel
 
+cfg = Config()
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=cfg.cors_allow_origins,
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*']
+    allow_methods=cfg.cors_allow_methods,
+    allow_headers=cfg.cors_allow_headers
 )
-cfg = Config()
 
 sentiment_model = SentimentModel('rf_v1.2_dill.joblib')
 
@@ -61,7 +62,7 @@ async def get_posts(limit: int = 10, last_id: Optional[int] = None):
             stmt = f"SELECT id, name, post, polarity, created_at FROM post ORDER BY id DESC LIMIT {limit}"
             if last_id != None:
                 stmt = f"SELECT id, name, post, polarity, created_at FROM post WHERE id < {last_id} ORDER BY id DESC LIMIT {limit}"
-                
+
             cursor.execute(stmt)
             data = cursor.fetchall()
             if len(data) <= 0:
