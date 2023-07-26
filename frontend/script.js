@@ -57,7 +57,6 @@ async function loadMainPage() {
         }
 
         document.getElementById("post-form").onsubmit = async (e) => {
-            e.preventDefault();
             let postInput = document.getElementById("post-text-input").value
             let body = {
                 'name': username,
