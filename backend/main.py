@@ -2,15 +2,18 @@ from typing import Annotated, List, Optional
 from fastapi import FastAPI, Form, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
+import operator
 from contextlib import closing
 import sklearn
 import sqlite3
 import nltk
+import dill
 
 from config import Config
 from model.post import Post
+from model.emotion_predict import EmotionPrediction, EmotionDetails
 from utils.db import get_sqlite_connection
-from utils.sentiment_model import SentimentModel
 
 cfg = Config()
 
@@ -22,8 +25,6 @@ app.add_middleware(
     allow_methods=cfg.cors_allow_methods,
     allow_headers=cfg.cors_allow_headers
 )
-
-sentiment_model = SentimentModel('rf_v1.2_dill.joblib')
 
 @app.on_event("startup")
 def on_startup():
@@ -76,22 +77,38 @@ async def get_posts(limit: int = 10, last_id: Optional[int] = None):
             
 @app.post("/post/", response_model=Post, status_code=status.HTTP_201_CREATED)
 async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]):
-    polarity = sentiment_model.model.predict([post])
-    post_model: Post = Post(name=name, post=post, polarity="positive" if polarity[0] == 4 else "negative")
+    with open(file_path,'rb') as io:
+        model = dill.load(io)
 
-    with closing(get_sqlite_connection(cfg.env)) as conn:
-        conn.row_factory = sqlite3.Row
-        with closing(conn.cursor()) as cursor:
-            posts: list[Post | None] = []
-            cursor.execute(
-                "INSERT INTO post (name, post, polarity) VALUES (?, ?, ?) RETURNING id, created_at",
-                (post_model.name, post_model.post, post_model.polarity)
-            )
+        polarity = model.predict([post])
+        post_model: Post = Post(name=name, post=post, polarity="positive" if polarity[0] == 4 else "negative")
 
-            data = cursor.fetchone()
-            post_model.id = data['id']
-            post_model.created_at = data['created_at']
+        with closing(get_sqlite_connection(cfg.env)) as conn:
+            conn.row_factory = sqlite3.Row
+            with closing(conn.cursor()) as cursor:
+                posts: list[Post | None] = []
+                cursor.execute(
+                    "INSERT INTO post (name, post, polarity) VALUES (?, ?, ?) RETURNING id, created_at",
+                    (post_model.name, post_model.post, post_model.polarity)
+                )
 
-            conn.commit()
+                data = cursor.fetchone()
+                post_model.id = data['id']
+                post_model.created_at = data['created_at']
 
-    return post_model
+                conn.commit()
+
+        return post_model
+
+@app.post("/emotion/", response_model=EmotionPrediction, response_class=ORJSONResponse)
+async def get_emotion_prediction(data: list[str]):
+    with open("lr_chain_v1.0.joblib",'rb') as io:
+        model = dill.load(io)
+        results_proba = model.predict_proba(data)
+        emotion_details = EmotionDetails(results_proba[0])
+        emotion_details_dict = emotion_details.asdict()
+
+        # prediction_model: EmotionPrediction = EmotionPrediction(prediction=emotion_details.asdict(), top_emotions=["test"])
+        top_emotions = dict(sorted(emotion_details_dict.items(), key=operator.itemgetter(1), reverse=True))
+
+        return ORJSONResponse({"prediction": emotion_details_dict, "top_emotions": list(top_emotions.keys())})
