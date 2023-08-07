@@ -36,6 +36,7 @@ class EmotionDetails():
         return {
             "admiration": self.admiration,
             "amusement": self.amusement,
+            "anger": self.anger,
             "annoyance": self.annoyance,
             "approval": self.approval,
             "caring": self.caring,
