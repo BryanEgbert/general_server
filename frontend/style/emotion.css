@@ -1,0 +1,18 @@
+body {
+    font-family: 'Ubuntu', sans-serif;
+}
+
+section {
+    display: flex;
+}
+
+#predict_result {
+    display: flex;
+    flex-wrap: wrap;
+    width: 30em;
+    gap: 1em;
+}
+
+hr {
+    margin: 1em
+}
