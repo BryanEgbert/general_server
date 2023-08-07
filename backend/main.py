@@ -29,6 +29,7 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     nltk.download('wordnet')
+    nltk.download("punkt")
     stmt = None
     with closing(get_sqlite_connection(cfg.env)) as conn:
         with closing(conn.cursor()) as cursor:
@@ -77,7 +78,7 @@ async def get_posts(limit: int = 10, last_id: Optional[int] = None):
             
 @app.post("/post/", response_model=Post, status_code=status.HTTP_201_CREATED)
 async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]):
-    with open(file_path,'rb') as io:
+    with open("rf_v1.2_dill.joblib",'rb') as io:
         model = dill.load(io)
 
         polarity = model.predict([post])
