@@ -62,7 +62,7 @@ sqlalchemy2-stubs==0.0.2a35
 starlette==0.27.0
 tensorboard==2.14.1
 tensorboard-data-server==0.7.2
-tensorflow==2.14.0
+tensorflow-cpu==2.14.0
 tensorflow-estimator==2.14.0
 tensorflow-io-gcs-filesystem==0.34.0
 termcolor==2.3.0
