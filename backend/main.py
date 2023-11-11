@@ -1,18 +1,24 @@
 from typing import Annotated, List, Optional
-from fastapi import FastAPI, Form, status
+from fastapi import FastAPI, Form, status, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, FileResponse
 import operator
 from contextlib import closing
 import sklearn
 import sqlite3
 import nltk
+import numpy as np
+import os
+from PIL import Image
+from io import BytesIO
 import dill
+import tensorflow as tf
 
 from config import Config
 from model.post import Post
 from model.emotion_predict import EmotionPrediction, EmotionDetails
+from model.pet_bowl_prediction import PetBowlPrediction, PetBowlPredictionDetails
 from utils.db import get_sqlite_connection
 
 cfg = Config()
@@ -30,6 +36,8 @@ app.add_middleware(
 def on_startup():
     nltk.download('wordnet')
     nltk.download("punkt")
+
+    os.environ.get("CUDA_VISIBLE_DEVICES", "-1")
     stmt = None
     with closing(get_sqlite_connection(cfg.env)) as conn:
         with closing(conn.cursor()) as cursor:
@@ -78,7 +86,7 @@ async def get_posts(limit: int = 10, last_id: Optional[int] = None):
             
 @app.post("/post/", response_model=Post, status_code=status.HTTP_201_CREATED)
 async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]):
-    with open("rf_v1.2_dill.joblib",'rb') as io:
+    with open("ml_models/rf_v1.2_dill.joblib",'rb') as io:
         model = dill.load(io)
 
         polarity = model.predict([post])
@@ -103,7 +111,7 @@ async def upload_post(name: Annotated[str, Form()], post: Annotated[str, Form()]
 
 @app.post("/emotion/", response_model=EmotionPrediction, response_class=ORJSONResponse)
 async def get_emotion_prediction(data: list[str]):
-    with open("lr_chain_v1.0.joblib",'rb') as io:
+    with open("ml_models/lr_chain_v1.0.joblib",'rb') as io:
         model = dill.load(io)
         results_proba = model.predict_proba(data)
         emotion_details = EmotionDetails(results_proba[0])
@@ -113,3 +121,29 @@ async def get_emotion_prediction(data: list[str]):
         top_emotions = dict(sorted(emotion_details_dict.items(), key=operator.itemgetter(1), reverse=True))
 
         return ORJSONResponse({"prediction": emotion_details_dict, "top_emotions": list(top_emotions.keys())})
+
+@app.post("/classification/pet_bowl")
+async def get_pet_bowl_classification(file: UploadFile, response_model=PetBowlPrediction, response_class=ORJSONResponse):
+    img = Image.open(BytesIO(await file.read()))
+
+    interpreter = tf.lite.Interpreter(model_path="./ml_models/pet_bowl_cnn.tflite")
+
+    interpreter.resize_tensor_input(0, [1, img.height, img.width, 3])
+    interpreter.allocate_tensors()
+
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    np_img = np.array(img)
+    np_img = np.expand_dims(np_img, axis=0)
+
+    interpreter.set_tensor(input_details[0]['index'], np_img)
+
+    interpreter.invoke()
+    output_data = list(interpreter.get_tensor(output_details[0]['index']))
+
+    pet_bowl_prediction_details = PetBowlPredictionDetails(output_data[0])
+    pet_bowl_prediction_details_dict = pet_bowl_prediction_details.asdict()
+    top_prediction = list(dict(sorted(pet_bowl_prediction_details_dict.items(), key=operator.itemgetter(1), reverse=True)))[0]
+
+    return ORJSONResponse({"prediction": pet_bowl_prediction_details_dict, "top": top_prediction})
