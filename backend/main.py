@@ -62,6 +62,10 @@ def on_startup():
             cursor.execute(stmt)
             conn.commit()
 
+@app.get("/")
+async def get_index(response_class=ORJSONResponse):
+    return ORJSONResponse({"status": "OK"})
+
 @app.get("/post/", response_model=List[Post])
 async def get_posts(limit: int = 10, last_id: Optional[int] = None):
     with closing(get_sqlite_connection(cfg.env)) as conn:
