@@ -126,8 +126,8 @@ async def get_emotion_prediction(data: list[str]):
 
         return ORJSONResponse({"prediction": emotion_details_dict, "top_emotions": list(top_emotions.keys())})
 
-@app.post("/classification/pet_bowl")
-async def get_pet_bowl_classification(file: UploadFile, response_model=PetBowlPrediction, response_class=ORJSONResponse):
+@app.post("/classification/pet_bowl", response_model=PetBowlPrediction, response_class=ORJSONResponse)
+async def get_pet_bowl_classification(file: UploadFile):
     img = Image.open(BytesIO(await file.read()))
 
     interpreter = tf.lite.Interpreter(model_path="./ml_models/pet_bowl_cnn.tflite")
