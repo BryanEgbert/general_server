@@ -1,7 +1,6 @@
-FROM python:3.11-alpine3.18
+FROM python:3.11-bullseye
 
-RUN apk update
-RUN apk --no-cache add build-base
+RUN apt-get update
 RUN mkdir -p /app
 
 COPY . /app
