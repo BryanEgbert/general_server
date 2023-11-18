@@ -14,6 +14,7 @@ from PIL import Image
 from io import BytesIO
 import dill
 import tensorflow as tf
+import base64
 
 from config import Config
 from model.post import Post
@@ -128,7 +129,8 @@ async def get_emotion_prediction(data: list[str]):
 
 @app.post("/classification/pet_bowl", response_model=PetBowlPrediction, response_class=ORJSONResponse)
 async def get_pet_bowl_classification(file: UploadFile):
-    img = Image.open(BytesIO(await file.read()))
+    im_byte = base64.b64decode(await file.read())
+    img = Image.open(BytesIO(im_byte))
 
     interpreter = tf.lite.Interpreter(model_path="./ml_models/pet_bowl_cnn.tflite")
 
