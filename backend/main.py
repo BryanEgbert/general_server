@@ -1,5 +1,5 @@
 from typing import Annotated, List, Optional
-from fastapi import FastAPI, Form, status, UploadFile
+from fastapi import FastAPI, Form, status, UploadFile, File, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse, FileResponse
@@ -128,9 +128,15 @@ async def get_emotion_prediction(data: list[str]):
         return ORJSONResponse({"prediction": emotion_details_dict, "top_emotions": list(top_emotions.keys())})
 
 @app.post("/classification/pet_bowl", response_model=PetBowlPrediction, response_class=ORJSONResponse)
-async def get_pet_bowl_classification(file: UploadFile):
-    im_byte = base64.b64decode(await file.read())
-    img = Image.open(BytesIO(im_byte))
+async def get_pet_bowl_classification(file: UploadFile = File(None), file_base64: Optional[str] = Form(None)):
+    img = None
+    if file_base64:
+        im_byte = base64.b64decode(file_base64)
+        img = Image.open(BytesIO(im_byte))
+    elif file:
+        img = Image.open(BytesIO(await file.read()))
+    else:
+        raise HTTPException(status_code=400, detail="at least one field should not be empty")
 
     interpreter = tf.lite.Interpreter(model_path="./ml_models/pet_bowl_cnn.tflite")
 
