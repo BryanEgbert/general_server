@@ -128,10 +128,10 @@ async def get_emotion_prediction(data: list[str]):
         return ORJSONResponse({"prediction": emotion_details_dict, "top_emotions": list(top_emotions.keys())})
 
 @app.post("/classification/pet_bowl", response_model=PetBowlPrediction, response_class=ORJSONResponse)
-async def get_pet_bowl_classification(file: UploadFile = File(None), file_base64: Optional[str] = Form(None)):
+async def get_pet_bowl_classification(file: UploadFile = File(None), file_base64: UploadFile = File(None)):
     img = None
     if file_base64:
-        im_byte = base64.b64decode(file_base64)
+        im_byte = base64.b64decode(await file.read())
         img = Image.open(BytesIO(im_byte))
     elif file:
         img = Image.open(BytesIO(await file.read()))
