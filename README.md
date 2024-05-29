@@ -1,5 +1,7 @@
-# simple_social_media
-A simple social media app where you can post contents
+# general_server
+A general server that is used for my side projects. List of APIs:
+- Simple CRUD operation using SQLite as the database
+- Integrate machine learning model to the code
 
 ## Technology Used
 - **Front-end**: Vanilla Javascript
